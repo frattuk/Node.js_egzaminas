@@ -9,34 +9,45 @@ app.use(cors());
 
 const { port, dbconfig } = require("./config");
 
-app.get("/api/fill", async (req, res) => {
+// app.get("/api/fill", async (req, res) => {
+//   try {
+//     const users = await fetch("https://jsonplaceholder.typicode.com/users");
+
+//     const usersResponse = await users.json();
+//     const userId = usersResponse.id;
+//     // const userName = usersResponse.name;
+//     // const userEmail = usersResponse.email;
+//     //const userAddress = `${usersResponse.address.city} ${usersResponse.address.street}`;
+
+//     const con = await mysql.createConnection(dbconfig);
+//     for (const user of usersResponse) {
+//       await con.execute(
+//         `INSERT INTO users (name, email, address) VALUES ( ${user.name}, ${user.email}, ${user.address.city})`
+//       );
+//     }
+
+app.get("/fill", async (req, res) => {
   try {
     const users = await fetch("https://jsonplaceholder.typicode.com/users");
 
     const usersResponse = await users.json();
-    const userId = usersResponse.id;
-    // const userName = usersResponse.name;
-    // const userEmail = usersResponse.email;
-    // const userAddress = `${usersResponse.address.city} ${usersResponse[0].address.street}`;
+
+    const userId = usersResponse[0].id;
+
+    const userName = usersResponse[0].name;
+
+    const userEmail = usersResponse[0].email;
+
+    const userAddress = `${usersResponse[0].address.street} ${usersResponse[0].address.city}`;
 
     const con = await mysql.createConnection(dbconfig);
     for (const user of usersResponse) {
       await con.execute(
-        `INSERT INTO users (name, email, address) values ( ${user.name}, ${user.email}, ${user.address.city}, ${user.address.street})`
+        `INSERT INTO users (name, email, address) values ( ${mysql.escape(
+          userName
+        )}, ${mysql.escape(userEmail)}, ${mysql.escape(userAddress)})`
       );
     }
-
-    // const con = await mysql.createConnection(dbConfig);
-
-    // for (const user of usersResponse) {
-
-    // await con.execute(`INSERT INTO users (name, username, email) VALUES (${user.name}, ${user.username}, ${user.email})`)
-
-    // }
-
-    // res.send(usersResponse);
-
-    // await con.end;
 
     const [response] = await con.execute("SELECT * FROM users");
     await con.end();
@@ -52,7 +63,3 @@ app.all("*", (req, res) => {
 });
 
 app.listen(port, () => console.log(`Listening on port ${port}`));
-
-// https://jsonplaceholder.typicode.com/users
-
-// ALTER TABLE users ADD COLUMN street, suite, city, zipcode [FIRST|AFTER address];
